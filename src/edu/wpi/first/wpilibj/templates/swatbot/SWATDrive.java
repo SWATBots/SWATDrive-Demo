@@ -49,19 +49,27 @@ public class SWATDrive {
         this.driveTrain.arcadeDrive(speed, 0.2 * driveGyro.getAngle());
     }
 
-    public boolean gyroDistanceDrive(double distance, double kp) {
-        /*causes the robot to drive forward a set distance
-         and it returns true if the robot is at its target*/
-        double error = distance - distanceEncoder.getDistance();
-        this.gyroDrive(0.5);
+    double distanceError;
+    public boolean gyroDistanceDrive(double distance, double speed) {
+        /*causes the robot to drive forward a set distance (measured in
+         * the units the encoders return), and it returns true if the
+         * robot is at its target*/
+        distanceError = distance - distanceEncoder.getDistance();
+        this.gyroDrive(speed * (distance / Math.abs(distance)));
 
 
-        if (Math.abs(error) < 0.5) {
+        if (Math.abs(distanceError) < 0.5) {
             return true;
         } else {
             return false;
         }
     }
+    
+    public boolean gyroDistanceDrive(double distance)
+    {
+        return this.gyroDistanceDrive(distance, 0.5);
+    }
+    
     double errorSum = 0.0;
 
     public void resetControllers() {
@@ -75,24 +83,28 @@ public class SWATDrive {
         driveGyro.reset();
     }
 
+    double kpTurn = -0.0017, kiTurn = -0.0001;
+    double turnError;
+    boolean turnTargetReached;
+    
     public boolean gyroTurn(double targetAngle) {
         /**
          * Turn targetAngle degrees (clockwise is positive and counter-clockwise
          * is negative) using a gyro sensor and a PI controller.
          */
-        double kp = -0.007, ki = -0.0001;
-        double error = driveGyro.getAngle() - targetAngle;
-        boolean targetReached = false;
-        errorSum += error;
+        
+         turnError = driveGyro.getAngle() - targetAngle;
+        turnTargetReached = false;
+        errorSum += turnError;
 
-        if (Math.abs(error) > 0.5) {
-            this.controlDrive(0.0, kp * error + errorSum * ki);
-            targetReached = false;
+        if (Math.abs(turnError) > 0.5) {
+            this.controlDrive(0.0, kpTurn * turnError + errorSum * kiTurn);
+            turnTargetReached = false;
         } else {
             this.controlDrive(0.0, 0.0);
-            targetReached = true;
+            turnTargetReached = true;
         }
 
-        return targetReached;
+        return turnTargetReached;
     }
 }

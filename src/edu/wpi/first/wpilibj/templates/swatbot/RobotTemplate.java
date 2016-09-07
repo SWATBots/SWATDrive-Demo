@@ -56,17 +56,13 @@ public class RobotTemplate extends IterativeRobot {
     {
         driveSystem.driveTrain.setSafetyEnabled(false);
         driveSystem.resetControllers();
-        /*turn1Complete = false;
-        turn1JustDone = true;
-        turn2Complete = false;
-        drive1Complete = false;*/
+
         nextStep = false;
         stepNumber = 0;
         autoTimer.reset();
         autoTimer.start();
     }
     
-    //boolean turn1Complete = false, turn1JustDone = true, turn2Complete = false, drive1Complete = false;
     boolean nextStep = false;
     int stepNumber = 0;
     public void autonomousPeriodic() {
@@ -75,7 +71,38 @@ public class RobotTemplate extends IterativeRobot {
         switch (stepNumber) {
             case 0:
             {
-                nextStep = driveSystem.gyroDistanceDrive(15.0, 0.005);
+                nextStep = driveSystem.gyroDistanceDrive(15.0);
+                break;
+            }
+            
+            case 1:
+            {
+                nextStep = driveSystem.gyroTurn(90.0);
+                autoTimer.reset();
+                break;
+            }
+                
+            case 2:
+            {
+                //Give the robot a second to stop completely.
+                if(autoTimer.get() > 1.0)
+                {
+                    nextStep = true;
+                }
+                driveSystem.stopDrive();
+                break;
+            }
+                
+            case 3:
+            {
+
+                nextStep = driveSystem.gyroDistanceDrive(-10.0, 0.6);
+                break;
+            }
+                
+            case 4:
+            {
+                nextStep = driveSystem.gyroTurn(-45.0);
                 break;
             }
                 
@@ -89,36 +116,10 @@ public class RobotTemplate extends IterativeRobot {
         if(nextStep == true)
         {
             stepNumber++;
+            driveSystem.resetControllers();
             nextStep = false;
         }
-        /*if(turn1Complete == false)
-        {
-            turn1Complete = driveSystem.gyroTurn(90.0);
-        }
-        else {
-            if(turn1JustDone == true)
-            {
-                turn1JustDone = false;
-                driveSystem.resetPITurn();
-            }
-            if(turn2Complete == false)
-            {
-                turn2Complete = driveSystem.gyroTurn(-45.0);
-            }
-        }*/
-        
-        /*if(autoTimer.get() < 4.0)
-        {
-            driveSystem.gyroDrive(0.5);
-        }
-        else {
-            driveSystem.controlDrive(0.0, 0.0);
-        }*/
-        /*
-        if(drive1Complete == false)
-        {
-            drive1Complete = driveSystem.gyroDistanceDrive(12.0, 0.005);
-        }*/
+
         
         SmartDashboard.putNumber("Angle ", driveSystem.driveGyro.getAngle());
         SmartDashboard.putNumber("Time ", autoTimer.get());
@@ -137,8 +138,7 @@ public class RobotTemplate extends IterativeRobot {
         rightDrive.setSafetyEnabled(false);
         leftDrive.setSafetyEnabled(false);
         driveTrain.setSafetyEnabled(false);
-        //robotTrain.setSafetyEnabled(false);
-        //robotTrain.arcadeDrive(driveStick.getY(), driveStick.getX());
+
         driveSystem.driveTrain.setSafetyEnabled(false);
         driveSystem.controlDrive(-driveStick.getY(), driveStick.getX());
         SmartDashboard.putNumber("Turn ", driveStick.getX());
@@ -147,10 +147,6 @@ public class RobotTemplate extends IterativeRobot {
         SmartDashboard.putNumber("Right Encoder ", driveSystem.distanceEncoder.getDistance());
         SmartDashboard.putNumber("Left Encoder ", leftEncoder.getDistance());
 
-        //driveSystem.leftMotor.setSafetyEnabled(false);
-        //driveSystem.rightMotor.setSafetyEnabled(false);
-        //driveSystem.driveTrain.setSafetyEnabled(false);
-        //driveSystem.driveTrain.arcadeDrive(driveStick);
     }
     
     /**
