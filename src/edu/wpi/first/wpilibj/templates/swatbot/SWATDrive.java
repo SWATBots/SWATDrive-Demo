@@ -83,11 +83,10 @@ public class SWATDrive {
         driveGyro.reset();
     }
 
-    double kpTurn = -0.0017, kiTurn = -0.0001;
     double turnError;
     boolean turnTargetReached;
     
-    public boolean gyroTurn(double targetAngle) {
+    public boolean gyroTurn(double targetAngle, double speed) {
         /**
          * Turn targetAngle degrees (clockwise is positive and counter-clockwise
          * is negative) using a gyro sensor and a PI controller.
@@ -95,10 +94,10 @@ public class SWATDrive {
         
          turnError = driveGyro.getAngle() - targetAngle;
         turnTargetReached = false;
-        errorSum += turnError;
+
 
         if (Math.abs(turnError) > 0.5) {
-            this.controlDrive(0.0, kpTurn * turnError + errorSum * kiTurn);
+            this.controlDrive(0.0, -speed * (turnError/Math.abs(turnError)));
             turnTargetReached = false;
         } else {
             this.controlDrive(0.0, 0.0);
@@ -106,5 +105,10 @@ public class SWATDrive {
         }
 
         return turnTargetReached;
+    }
+    
+    public boolean gyroTurn(double targetAngle)
+    {
+        return this.gyroTurn(targetAngle, 0.5);
     }
 }
